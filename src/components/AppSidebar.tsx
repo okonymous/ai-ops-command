@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+
+const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/tasks", label: "Tasks", icon: ListTodo },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
@@ -21,7 +23,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/analytics", label: "Analytics", icon: LineChart },
   { to: "/ai-settings", label: "AI Settings", icon: BrainCircuit },
   { to: "/settings", label: "System Settings", icon: Settings },
-] as const;
+];
 
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
