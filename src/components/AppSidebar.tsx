@@ -12,24 +12,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
-
-const NAV: NavItem[] = [
+const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/tasks", label: "Tasks", icon: ListTodo },
-  { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/team", label: "Team Members", icon: Users },
-  { to: "/reports", label: "Reports", icon: FileBarChart },
-  { to: "/analytics", label: "Analytics", icon: LineChart },
-  { to: "/ai-settings", label: "AI Settings", icon: BrainCircuit },
-  { to: "/settings", label: "System Settings", icon: Settings },
-];
-
+  { to: "/tasks", label: "Tasks", icon: ListTodo, exact: false },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays, exact: false },
+  { to: "/team", label: "Team Members", icon: Users, exact: false },
+  { to: "/reports", label: "Reports", icon: FileBarChart, exact: false },
+  { to: "/analytics", label: "Analytics", icon: LineChart, exact: false },
+  { to: "/ai-settings", label: "AI Settings", icon: BrainCircuit, exact: false },
+  { to: "/settings", label: "System Settings", icon: Settings, exact: false },
+] as const;
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const isActive = (to: string, exact?: boolean) =>
+  const isActive = (to: string, exact: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
   return (
