@@ -14,16 +14,267 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_settings: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_name: string | null
+          assigned_to: string | null
+          assignment_reason: string | null
+          category: Database["public"]["Enums"]["task_category"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          equipment: string[]
+          estimated_duration: string | null
+          id: string
+          location: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          required_team: string[]
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          status: Database["public"]["Enums"]["task_status"]
+          task_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          assignment_reason?: string | null
+          category?: Database["public"]["Enums"]["task_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment?: string[]
+          estimated_duration?: string | null
+          id?: string
+          location?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          required_team?: string[]
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          status?: Database["public"]["Enums"]["task_status"]
+          task_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_name?: string | null
+          assigned_to?: string | null
+          assignment_reason?: string | null
+          category?: Database["public"]["Enums"]["task_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment?: string[]
+          estimated_duration?: string | null
+          id?: string
+          location?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          required_team?: string[]
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          status?: Database["public"]["Enums"]["task_status"]
+          task_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          availability: string
+          created_at: string
+          department: string | null
+          email: string | null
+          employee_id: string | null
+          id: string
+          manager: string | null
+          name: string
+          phone: string | null
+          photo_url: string | null
+          position: string | null
+          skills: string[]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          availability?: string
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          employee_id?: string | null
+          id?: string
+          manager?: string | null
+          name: string
+          phone?: string | null
+          photo_url?: string | null
+          position?: string | null
+          skills?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          employee_id?: string | null
+          id?: string
+          manager?: string | null
+          name?: string
+          phone?: string | null
+          photo_url?: string | null
+          position?: string | null
+          skills?: string[]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "it_manager" | "team_lead" | "engineer" | "viewer"
+      risk_level: "low" | "medium" | "high"
+      task_category:
+        | "network"
+        | "server"
+        | "datacenter"
+        | "virtualization"
+        | "storage"
+        | "backup"
+        | "cloud"
+        | "security"
+        | "helpdesk"
+        | "application"
+        | "database"
+        | "other"
+      task_priority: "low" | "medium" | "high" | "critical"
+      task_status:
+        | "planned"
+        | "in_progress"
+        | "completed"
+        | "overdue"
+        | "cancelled"
+        | "on_hold"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +401,32 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "it_manager", "team_lead", "engineer", "viewer"],
+      risk_level: ["low", "medium", "high"],
+      task_category: [
+        "network",
+        "server",
+        "datacenter",
+        "virtualization",
+        "storage",
+        "backup",
+        "cloud",
+        "security",
+        "helpdesk",
+        "application",
+        "database",
+        "other",
+      ],
+      task_priority: ["low", "medium", "high", "critical"],
+      task_status: [
+        "planned",
+        "in_progress",
+        "completed",
+        "overdue",
+        "cancelled",
+        "on_hold",
+      ],
+    },
   },
 } as const
