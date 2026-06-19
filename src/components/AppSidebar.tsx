@@ -23,6 +23,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/settings", label: "System Settings", icon: Settings },
 ] as const;
 
+
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
