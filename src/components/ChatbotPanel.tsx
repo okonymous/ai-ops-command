@@ -43,10 +43,11 @@ type ParsedTask = {
   location: string | null;
   equipment: string[];
   required_team: string[];
-  assigned_member_id: string | null;
-  assigned_name: string;
+  assigned_member_ids: string[];
+  assigned_names: string[];
   assignment_reason: string;
 };
+
 
 type ChatMessage = {
   id: string;
@@ -126,10 +127,13 @@ export function ChatbotPanel({ open, onClose }: { open: boolean; onClose: () => 
   const handleCreate = async (msgId: string, task: ParsedTask) => {
     if (!user) return;
     setCreating(msgId);
-    // The AI may return an empty string or a non-existent id; only keep a valid member id.
-    const validAssignedTo = members.some((m) => m.id === task.assigned_member_id)
-      ? task.assigned_member_id
-      : null;
+    // Keep only ids that match a real team member.
+    const validIds = (task.assigned_member_ids ?? []).filter((id) =>
+      members.some((m) => m.id === id),
+    );
+    const validNames = validIds.length
+      ? validIds.map((id) => members.find((m) => m.id === id)?.name ?? "")
+      : task.assigned_names ?? [];
     const { error } = await supabase.from("tasks").insert({
       title: task.title,
       description: task.description,
@@ -142,13 +146,16 @@ export function ChatbotPanel({ open, onClose }: { open: boolean; onClose: () => 
       equipment: task.equipment ?? [],
       required_team: task.required_team ?? [],
       location: task.location,
-      assigned_to: validAssignedTo,
-      assigned_name: task.assigned_name,
+      assigned_to_ids: validIds,
+      assigned_names: validNames,
+      assigned_to: validIds[0] ?? null,
+      assigned_name: validNames.join(", ") || null,
       assignment_reason: task.assignment_reason,
       created_by: user.id,
     });
     setCreating(null);
     if (error) return toast.error(error.message);
+
     toast.success(`Task created: ${task.title}`);
     setMessages((m) => m.map((x) => (x.id === msgId ? { ...x, created: true } : x)));
   };
@@ -288,11 +295,13 @@ function TaskPreview({ task }: { task: ParsedTask }) {
           </span>
         )}
         <span className="flex items-center gap-1.5">
-          <UserIcon className="h-3.5 w-3.5" /> {task.assigned_name}
+          <UserIcon className="h-3.5 w-3.5" />{" "}
+          {task.assigned_names?.length ? task.assigned_names.join(", ") : "Unassigned"}
           {task.assignment_reason && (
             <span className="text-foreground/60">— {task.assignment_reason}</span>
           )}
         </span>
+
         {task.location && (
           <span className="flex items-center gap-1.5">
             <ShieldAlert className="h-3.5 w-3.5" /> {task.location}

@@ -71,7 +71,9 @@ export type Workload = {
 export function computeWorkloads(members: TeamMemberRow[], tasks: TaskRow[]): Workload[] {
   return members
     .map((member) => {
-      const mine = tasks.filter((t) => t.assigned_to === member.id);
+      const isMine = (t: TaskRow) =>
+        t.assigned_to_ids?.length ? t.assigned_to_ids.includes(member.id) : t.assigned_to === member.id;
+      const mine = tasks.filter(isMine);
       const open = mine.filter((t) => t.status === "planned" || t.status === "in_progress").length;
       const completed = mine.filter((t) => t.status === "completed").length;
       const overdue = mine.filter((t) => t.status === "overdue").length;

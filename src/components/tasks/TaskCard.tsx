@@ -43,15 +43,33 @@ export function TaskCard({
   const { canEdit, hasRole, user } = useAuth();
   const status = STATUS_META[task.status];
   const cat = CATEGORY_META[task.category];
-  const member = members.find((m) => m.id === task.assigned_to);
+  const assignedIds = task.assigned_to_ids?.length
+    ? task.assigned_to_ids
+    : task.assigned_to
+    ? [task.assigned_to]
+    : [];
+  const assignedNames = task.assigned_names?.length
+    ? task.assigned_names
+    : task.assigned_name
+    ? [task.assigned_name]
+    : [];
   const canDelete = hasRole("admin", "it_manager", "team_lead") || task.created_by === user?.id;
 
-  const initials = (task.assigned_name || member?.name || "NA")
-    .split(" ")
-    .map((s) => s[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const toInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((s) => s[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  const engineers = assignedIds.length
+    ? assignedIds.map((id, i) => {
+        const m = members.find((mm) => mm.id === id);
+        return { name: m?.name ?? assignedNames[i] ?? "NA", position: m?.position ?? "Engineer" };
+      })
+    : assignedNames.map((n) => ({ name: n, position: "Engineer" }));
+
 
   const updateStatus = async (newStatus: TaskStatus) => {
     const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", task.id);
@@ -146,22 +164,45 @@ export function TaskCard({
         </div>
       )}
 
-      <div className="mt-3 flex items-center justify-between border-t pt-3">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-7 w-7">
-            <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-semibold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="leading-tight">
-            <p className="text-xs font-medium">{task.assigned_name || member?.name || "Unassigned"}</p>
-            <p className="text-[11px] text-muted-foreground">{member?.position || "Engineer"}</p>
+      <div className="mt-3 flex items-center justify-between gap-2 border-t pt-3">
+        {engineers.length > 0 ? (
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex -space-x-2">
+              {engineers.slice(0, 4).map((e, i) => (
+                <Avatar key={i} className="h-7 w-7 ring-2 ring-background">
+                  <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-semibold">
+                    {toInitials(e.name)}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {engineers.length > 4 && (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold ring-2 ring-background">
+                  +{engineers.length - 4}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-medium">
+                {engineers.map((e) => e.name).join(", ")}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {engineers.length > 1 ? `${engineers.length} engineers` : engineers[0].position}
+              </p>
+            </div>
           </div>
-        </div>
-        <Badge variant="secondary" className={cn("text-[11px]", PRIORITY_META[task.priority].className)}>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="bg-muted text-[10px] font-semibold">NA</AvatarFallback>
+            </Avatar>
+            <p className="text-xs font-medium text-muted-foreground">Unassigned</p>
+          </div>
+        )}
+        <Badge variant="secondary" className={cn("shrink-0 text-[11px]", PRIORITY_META[task.priority].className)}>
           {PRIORITY_META[task.priority].label}
         </Badge>
       </div>
+
     </div>
   );
 }
