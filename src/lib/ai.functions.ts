@@ -60,7 +60,7 @@ Categorize using these rules:
 Available engineers:
 ${memberList || "(none yet)"}
 
-Pick the best matching engineer by skills. If no engineer fits or none exist, set assigned_member_id to null and put a generic name in assigned_name.`;
+Pick the best matching engineer(s) by skills. A task may need MORE THAN ONE engineer — if the activity mentions multiple people, or the work clearly requires several engineers, include all of them. If no engineer fits or none exist, return an empty assigned_member_ids array and put a generic name in assigned_names.`;
 
     const userPrompt = `Activity: "${data.text}"
 
@@ -76,10 +76,11 @@ Return ONLY JSON with this exact shape:
   "location": string or null,
   "equipment": string[],
   "required_team": string[],
-  "assigned_member_id": string (must match an engineer id from the list) or null,
-  "assigned_name": string,
+  "assigned_member_ids": string[] (each must match an engineer id from the list; empty array if none),
+  "assigned_names": string[] (display names of the assigned engineers, one per assignment),
   "assignment_reason": string
 }`;
+
 
     const json = await callGateway({
       model: data.model || DEFAULT_MODEL,
