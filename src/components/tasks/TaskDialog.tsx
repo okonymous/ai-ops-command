@@ -43,7 +43,7 @@ const empty = {
   estimated_duration: "",
   risk_level: "low",
   location: "",
-  assigned_to: "",
+  assigned_ids: [] as string[],
   equipment: "",
   required_team: "",
 };
