@@ -295,11 +295,13 @@ function TaskPreview({ task }: { task: ParsedTask }) {
           </span>
         )}
         <span className="flex items-center gap-1.5">
-          <UserIcon className="h-3.5 w-3.5" /> {task.assigned_name}
+          <UserIcon className="h-3.5 w-3.5" />{" "}
+          {task.assigned_names?.length ? task.assigned_names.join(", ") : "Unassigned"}
           {task.assignment_reason && (
             <span className="text-foreground/60">— {task.assignment_reason}</span>
           )}
         </span>
+
         {task.location && (
           <span className="flex items-center gap-1.5">
             <ShieldAlert className="h-3.5 w-3.5" /> {task.location}
