@@ -201,16 +201,39 @@ export function TaskDialog({
             </Field>
           </div>
 
-          <Field label="Assigned Engineer">
-            <Select value={form.assigned_to} onValueChange={(v) => set("assigned_to", v)}>
-              <SelectTrigger><SelectValue placeholder="Select engineer" /></SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>{m.name} — {m.position}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Field label="Assigned Engineers">
+            <div className="space-y-1.5">
+              {members.length === 0 && (
+                <p className="text-xs text-muted-foreground">No team members yet.</p>
+              )}
+              <div className="grid max-h-44 grid-cols-1 gap-1 overflow-y-auto rounded-md border p-2">
+                {members.map((m) => {
+                  const checked = form.assigned_ids.includes(m.id);
+                  return (
+                    <button
+                      type="button"
+                      key={m.id}
+                      onClick={() => toggleEngineer(m.id)}
+                      className={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+                        checked ? "bg-primary/15 text-foreground" : "hover:bg-accent"
+                      }`}
+                    >
+                      <span className="truncate">
+                        {m.name} <span className="text-muted-foreground">— {m.position}</span>
+                      </span>
+                      {checked && <span className="text-primary">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              {form.assigned_ids.length > 0 && (
+                <p className="text-[11px] text-muted-foreground">
+                  {form.assigned_ids.length} engineer(s) selected
+                </p>
+              )}
+            </div>
           </Field>
+
 
           <Field label="Location">
             <Input value={form.location} onChange={(e) => set("location", e.target.value)} placeholder="Data Center / Kantor Pusat" />
