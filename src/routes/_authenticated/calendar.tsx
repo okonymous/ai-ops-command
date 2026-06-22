@@ -60,7 +60,11 @@ function CalendarPage() {
     () =>
       tasks.filter((t) => {
         if (!t.task_date) return false;
-        if (engineer !== "all" && t.assigned_to !== engineer) return false;
+        if (
+          engineer !== "all" &&
+          !(t.assigned_to_ids?.length ? t.assigned_to_ids.includes(engineer) : t.assigned_to === engineer)
+        )
+          return false;
         if (category !== "all" && t.category !== category) return false;
         if (priority !== "all" && t.priority !== priority) return false;
         return true;
