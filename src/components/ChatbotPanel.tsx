@@ -43,10 +43,11 @@ type ParsedTask = {
   location: string | null;
   equipment: string[];
   required_team: string[];
-  assigned_member_id: string | null;
-  assigned_name: string;
+  assigned_member_ids: string[];
+  assigned_names: string[];
   assignment_reason: string;
 };
+
 
 type ChatMessage = {
   id: string;
