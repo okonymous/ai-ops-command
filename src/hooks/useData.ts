@@ -8,7 +8,7 @@ export function useTasks() {
 
   useEffect(() => {
     const channel = supabase
-      .channel("tasks-changes")
+      .channel(`tasks-changes-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, () => {
         qc.invalidateQueries({ queryKey: ["tasks"] });
       })
@@ -36,7 +36,7 @@ export function useTeamMembers() {
 
   useEffect(() => {
     const channel = supabase
-      .channel("team-changes")
+      .channel(`team-changes-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "team_members" }, () => {
         qc.invalidateQueries({ queryKey: ["team_members"] });
       })
