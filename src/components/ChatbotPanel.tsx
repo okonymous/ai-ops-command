@@ -126,6 +126,10 @@ export function ChatbotPanel({ open, onClose }: { open: boolean; onClose: () => 
   const handleCreate = async (msgId: string, task: ParsedTask) => {
     if (!user) return;
     setCreating(msgId);
+    // The AI may return an empty string or a non-existent id; only keep a valid member id.
+    const validAssignedTo = members.some((m) => m.id === task.assigned_member_id)
+      ? task.assigned_member_id
+      : null;
     const { error } = await supabase.from("tasks").insert({
       title: task.title,
       description: task.description,
@@ -138,7 +142,7 @@ export function ChatbotPanel({ open, onClose }: { open: boolean; onClose: () => 
       equipment: task.equipment ?? [],
       required_team: task.required_team ?? [],
       location: task.location,
-      assigned_to: task.assigned_member_id,
+      assigned_to: validAssignedTo,
       assigned_name: task.assigned_name,
       assignment_reason: task.assignment_reason,
       created_by: user.id,
