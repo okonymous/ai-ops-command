@@ -43,15 +43,33 @@ export function TaskCard({
   const { canEdit, hasRole, user } = useAuth();
   const status = STATUS_META[task.status];
   const cat = CATEGORY_META[task.category];
-  const member = members.find((m) => m.id === task.assigned_to);
+  const assignedIds = task.assigned_to_ids?.length
+    ? task.assigned_to_ids
+    : task.assigned_to
+    ? [task.assigned_to]
+    : [];
+  const assignedNames = task.assigned_names?.length
+    ? task.assigned_names
+    : task.assigned_name
+    ? [task.assigned_name]
+    : [];
   const canDelete = hasRole("admin", "it_manager", "team_lead") || task.created_by === user?.id;
 
-  const initials = (task.assigned_name || member?.name || "NA")
-    .split(" ")
-    .map((s) => s[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const toInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((s) => s[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  const engineers = assignedIds.length
+    ? assignedIds.map((id, i) => {
+        const m = members.find((mm) => mm.id === id);
+        return { name: m?.name ?? assignedNames[i] ?? "NA", position: m?.position ?? "Engineer" };
+      })
+    : assignedNames.map((n) => ({ name: n, position: "Engineer" }));
+
 
   const updateStatus = async (newStatus: TaskStatus) => {
     const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", task.id);
