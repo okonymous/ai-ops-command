@@ -74,7 +74,12 @@ export function TaskDialog({
         estimated_duration: task.estimated_duration ?? "",
         risk_level: task.risk_level,
         location: task.location ?? "",
-        assigned_to: task.assigned_to ?? "",
+        assigned_ids:
+          task.assigned_to_ids?.length
+            ? task.assigned_to_ids
+            : task.assigned_to
+            ? [task.assigned_to]
+            : [],
         equipment: task.equipment.join(", "),
         required_team: task.required_team.join(", "),
       });
@@ -85,11 +90,20 @@ export function TaskDialog({
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const toggleEngineer = (id: string) =>
+    setForm((f) => ({
+      ...f,
+      assigned_ids: f.assigned_ids.includes(id)
+        ? f.assigned_ids.filter((x) => x !== id)
+        : [...f.assigned_ids, id],
+    }));
+
   const save = async () => {
     if (!form.title.trim()) return toast.error("Title is required");
     if (!user) return;
     setSaving(true);
-    const member = members.find((m) => m.id === form.assigned_to);
+    const selected = members.filter((m) => form.assigned_ids.includes(m.id));
+    const names = selected.map((m) => m.name);
     const payload = {
       title: form.title,
       description: form.description || null,
@@ -100,8 +114,10 @@ export function TaskDialog({
       estimated_duration: form.estimated_duration || null,
       risk_level: form.risk_level as TaskRow["risk_level"],
       location: form.location || null,
-      assigned_to: form.assigned_to || null,
-      assigned_name: member?.name ?? null,
+      assigned_to_ids: selected.map((m) => m.id),
+      assigned_names: names,
+      assigned_to: selected[0]?.id ?? null,
+      assigned_name: names.join(", ") || null,
       equipment: form.equipment ? form.equipment.split(",").map((s) => s.trim()).filter(Boolean) : [],
       required_team: form.required_team
         ? form.required_team.split(",").map((s) => s.trim()).filter(Boolean)
@@ -117,6 +133,7 @@ export function TaskDialog({
     toast.success(task ? "Task updated" : "Task created");
     onOpenChange(false);
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
