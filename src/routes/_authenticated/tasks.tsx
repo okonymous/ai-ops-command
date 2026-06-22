@@ -44,7 +44,11 @@ function TasksPage() {
       if (status !== "all" && t.status !== status) return false;
       if (priority !== "all" && t.priority !== priority) return false;
       if (category !== "all" && t.category !== category) return false;
-      if (engineer !== "all" && t.assigned_to !== engineer) return false;
+      if (
+        engineer !== "all" &&
+        !(t.assigned_to_ids?.length ? t.assigned_to_ids.includes(engineer) : t.assigned_to === engineer)
+      )
+        return false;
       if (search && !`${t.title} ${t.description ?? ""} ${t.assigned_name ?? ""}`.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
