@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Plus, Mail, Phone, Trash2, Users, Sparkles } from "lucide-react";
+import { Plus, Mail, Phone, Trash2, Users, Sparkles, Pencil } from "lucide-react";
+import type { TeamMemberRow } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useTasks, useTeamMembers, computeWorkloads } from "@/hooks/useData";
 import { useAuth } from "@/hooks/useAuth";
