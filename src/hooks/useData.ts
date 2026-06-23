@@ -77,8 +77,19 @@ export type Workload = {
 export function computeWorkloads(members: TeamMemberRow[], tasks: TaskRow[]): Workload[] {
   return members
     .map((member) => {
-      const isMine = (t: TaskRow) =>
-        t.assigned_to_ids?.length ? t.assigned_to_ids.includes(member.id) : t.assigned_to === member.id;
+      const memberName = member.name.trim().toLowerCase();
+      const isMine = (t: TaskRow) => {
+        if (t.assigned_to_ids?.length && t.assigned_to_ids.includes(member.id)) return true;
+        if (t.assigned_to === member.id) return true;
+        // Fallback: match by name when ids were not linked (e.g. AI-created tasks).
+        if (t.assigned_names?.length) {
+          return t.assigned_names.some((n) => {
+            const nm = (n ?? "").trim().toLowerCase();
+            return nm === memberName || nm.includes(memberName) || memberName.includes(nm);
+          });
+        }
+        return false;
+      };
       const mine = tasks.filter(isMine);
       const open = mine.filter((t) => t.status === "planned" || t.status === "in_progress").length;
       const completed = mine.filter((t) => t.status === "completed").length;
