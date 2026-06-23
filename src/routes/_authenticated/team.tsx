@@ -39,6 +39,7 @@ function TeamPage() {
   const { hasRole } = useAuth();
   const canManage = hasRole("admin", "it_manager", "team_lead");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<TeamMemberRow | null>(null);
   const workloads = computeWorkloads(members, tasks);
 
   const seed = async () => {
