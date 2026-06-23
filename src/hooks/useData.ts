@@ -51,6 +51,9 @@ export function useTeamMembers() {
 
   return useQuery({
     queryKey: ["team_members"],
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchInterval: 20000,
     queryFn: async (): Promise<TeamMemberRow[]> => {
       const { data, error } = await supabase
         .from("team_members")
