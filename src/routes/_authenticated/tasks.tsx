@@ -42,8 +42,12 @@ function TasksPage() {
   const [priority, setPriority] = useState("all");
   const [category, setCategory] = useState("all");
   const [engineer, setEngineer] = useState("all");
+  const [timeframe, setTimeframe] = useState("all");
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const filtered = useMemo(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const selected = date ? format(date, "yyyy-MM-dd") : null;
     return tasks.filter((t) => {
       if (status !== "all" && t.status !== status) return false;
       if (priority !== "all" && t.priority !== priority) return false;
@@ -53,11 +57,15 @@ function TasksPage() {
         !(t.assigned_to_ids?.length ? t.assigned_to_ids.includes(engineer) : t.assigned_to === engineer)
       )
         return false;
+      if (selected && t.task_date !== selected) return false;
+      if (timeframe === "past" && !(t.task_date && t.task_date < today)) return false;
+      if (timeframe === "today" && t.task_date !== today) return false;
+      if (timeframe === "upcoming" && !(t.task_date && t.task_date > today)) return false;
       if (search && !`${t.title} ${t.description ?? ""} ${t.assigned_name ?? ""}`.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
     });
-  }, [tasks, status, priority, category, engineer, search]);
+  }, [tasks, status, priority, category, engineer, timeframe, date, search]);
 
   return (
     <div>
