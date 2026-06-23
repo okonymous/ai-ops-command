@@ -151,6 +151,7 @@ function TeamPage() {
       )}
 
       <MemberDialog open={open} onOpenChange={setOpen} />
+      <EditMemberDialog member={editing} onClose={() => setEditing(null)} />
     </div>
   );
 }
