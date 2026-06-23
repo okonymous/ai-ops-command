@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, ListTodo } from "lucide-react";
+import { Plus, Search, ListTodo, CalendarIcon, X } from "lucide-react";
+import { format } from "date-fns";
 import { useTasks, useTeamMembers } from "@/hooks/useData";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -8,6 +9,8 @@ import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskDialog } from "@/components/tasks/TaskDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   STATUS_META,
   PRIORITY_META,
