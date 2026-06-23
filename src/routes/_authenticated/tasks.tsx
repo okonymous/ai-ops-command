@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, Search, ListTodo } from "lucide-react";
+import { Plus, Search, ListTodo, CalendarIcon, X } from "lucide-react";
+import { format } from "date-fns";
 import { useTasks, useTeamMembers } from "@/hooks/useData";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -8,6 +9,8 @@ import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskDialog } from "@/components/tasks/TaskDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
   STATUS_META,
   PRIORITY_META,
@@ -38,8 +42,12 @@ function TasksPage() {
   const [priority, setPriority] = useState("all");
   const [category, setCategory] = useState("all");
   const [engineer, setEngineer] = useState("all");
+  const [timeframe, setTimeframe] = useState("all");
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const filtered = useMemo(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const selected = date ? format(date, "yyyy-MM-dd") : null;
     return tasks.filter((t) => {
       if (status !== "all" && t.status !== status) return false;
       if (priority !== "all" && t.priority !== priority) return false;
@@ -49,11 +57,15 @@ function TasksPage() {
         !(t.assigned_to_ids?.length ? t.assigned_to_ids.includes(engineer) : t.assigned_to === engineer)
       )
         return false;
+      if (selected && t.task_date !== selected) return false;
+      if (timeframe === "past" && !(t.task_date && t.task_date < today)) return false;
+      if (timeframe === "today" && t.task_date !== today) return false;
+      if (timeframe === "upcoming" && !(t.task_date && t.task_date > today)) return false;
       if (search && !`${t.title} ${t.description ?? ""} ${t.assigned_name ?? ""}`.toLowerCase().includes(search.toLowerCase()))
         return false;
       return true;
     });
-  }, [tasks, status, priority, category, engineer, search]);
+  }, [tasks, status, priority, category, engineer, timeframe, date, search]);
 
   return (
     <div>
@@ -78,6 +90,48 @@ function TasksPage() {
         <FilterSelect value={priority} onChange={setPriority} placeholder="Priority" options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_META[p].label }))} />
         <FilterSelect value={category} onChange={setCategory} placeholder="Category" options={TASK_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_META[c].label }))} />
         <FilterSelect value={engineer} onChange={setEngineer} placeholder="Engineer" options={members.map((m) => ({ value: m.id, label: m.name }))} />
+        <FilterSelect
+          value={timeframe}
+          onChange={(v) => {
+            setTimeframe(v);
+            if (v !== "all") setDate(undefined);
+          }}
+          placeholder="Timeframe"
+          allLabel="All Time"
+          options={[
+            { value: "past", label: "Past" },
+            { value: "today", label: "Today" },
+            { value: "upcoming", label: "Upcoming" },
+          ]}
+        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn("w-[150px] justify-start gap-2 font-normal", !date && "text-muted-foreground")}
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {date ? format(date, "dd MMM yyyy") : "Pick date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(d) => {
+                setDate(d);
+                if (d) setTimeframe("all");
+              }}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+        {date && (
+          <Button variant="ghost" size="icon" onClick={() => setDate(undefined)} title="Clear date">
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -107,11 +161,13 @@ function FilterSelect({
   onChange,
   placeholder,
   options,
+  allLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   options: { value: string; label: string }[];
+  allLabel?: string;
 }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -119,7 +175,7 @@ function FilterSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All {placeholder}</SelectItem>
+        <SelectItem value="all">{allLabel ?? `All ${placeholder}`}</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
         ))}
