@@ -222,3 +222,79 @@ function MemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
     </Dialog>
   );
 }
+
+function EditMemberDialog({ member, onClose }: { member: TeamMemberRow | null; onClose: () => void }) {
+  const [form, setForm] = useState({ name: "", position: "", department: "", email: "", phone: "", employee_id: "", manager: "", skills: "" });
+  const [saving, setSaving] = useState(false);
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (member) {
+      setForm({
+        name: member.name ?? "",
+        position: member.position ?? "",
+        department: member.department ?? "",
+        email: member.email ?? "",
+        phone: member.phone ?? "",
+        employee_id: member.employee_id ?? "",
+        manager: member.manager ?? "",
+        skills: (member.skills ?? []).join(", "),
+      });
+    }
+  }, [member]);
+
+  const save = async () => {
+    if (!member) return;
+    if (!form.name.trim()) return toast.error("Name is required");
+    setSaving(true);
+    const { error } = await supabase
+      .from("team_members")
+      .update({
+        name: form.name,
+        position: form.position || null,
+        department: form.department || null,
+        email: form.email || null,
+        phone: form.phone || null,
+        employee_id: form.employee_id || null,
+        manager: form.manager || null,
+        skills: form.skills ? form.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      })
+      .eq("id", member.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Member updated");
+    onClose();
+  };
+
+  return (
+    <Dialog open={!!member} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader><DialogTitle>Edit Team Member</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          {[
+            ["name", "Full Name"],
+            ["position", "Position"],
+            ["department", "Department"],
+            ["employee_id", "Employee ID"],
+            ["email", "Email"],
+            ["phone", "Phone"],
+            ["manager", "Manager"],
+          ].map(([k, label]) => (
+            <div key={k} className="space-y-1.5">
+              <Label className="text-xs">{label}</Label>
+              <Input value={(form as Record<string, string>)[k]} onChange={(e) => set(k, e.target.value)} />
+            </div>
+          ))}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Skills (comma separated)</Label>
+            <Input value={form.skills} onChange={(e) => set("skills", e.target.value)} placeholder="VMware, Linux, Backup" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
