@@ -93,16 +93,26 @@ function TeamPage() {
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="truncate font-display font-semibold">{member.name}</h3>
                       {canManage && (
-                        <button
-                          onClick={async () => {
-                            const { error } = await supabase.from("team_members").delete().eq("id", member.id);
-                            if (error) toast.error(error.message);
-                            else toast.success("Member removed");
-                          }}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditing(member)}
+                            className="text-muted-foreground hover:text-primary"
+                            aria-label="Edit member"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const { error } = await supabase.from("team_members").delete().eq("id", member.id);
+                              if (error) toast.error(error.message);
+                              else toast.success("Member removed");
+                            }}
+                            className="text-muted-foreground hover:text-destructive"
+                            aria-label="Delete member"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">{member.position} • {member.department}</p>
