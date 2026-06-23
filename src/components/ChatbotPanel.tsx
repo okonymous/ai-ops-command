@@ -128,9 +128,22 @@ export function ChatbotPanel({ open, onClose }: { open: boolean; onClose: () => 
     if (!user) return;
     setCreating(msgId);
     // Keep only ids that match a real team member.
-    const validIds = (task.assigned_member_ids ?? []).filter((id) =>
-      members.some((m) => m.id === id),
+    const idSet = new Set(
+      (task.assigned_member_ids ?? []).filter((id) => members.some((m) => m.id === id)),
     );
+    // Resolve any names the AI returned (without ids) to real member ids.
+    for (const rawName of task.assigned_names ?? []) {
+      const n = rawName.trim().toLowerCase();
+      if (!n) continue;
+      const match = members.find(
+        (m) =>
+          m.name.toLowerCase() === n ||
+          m.name.toLowerCase().includes(n) ||
+          n.includes(m.name.toLowerCase()),
+      );
+      if (match) idSet.add(match.id);
+    }
+    const validIds = [...idSet];
     const validNames = validIds.length
       ? validIds.map((id) => members.find((m) => m.id === id)?.name ?? "")
       : task.assigned_names ?? [];

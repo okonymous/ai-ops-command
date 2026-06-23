@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Plus, Mail, Phone, Trash2, Users, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Mail, Phone, Trash2, Users, Sparkles, Pencil } from "lucide-react";
+import type { TeamMemberRow } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useTasks, useTeamMembers, computeWorkloads } from "@/hooks/useData";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +39,7 @@ function TeamPage() {
   const { hasRole } = useAuth();
   const canManage = hasRole("admin", "it_manager", "team_lead");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<TeamMemberRow | null>(null);
   const workloads = computeWorkloads(members, tasks);
 
   const seed = async () => {
@@ -91,16 +93,26 @@ function TeamPage() {
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="truncate font-display font-semibold">{member.name}</h3>
                       {canManage && (
-                        <button
-                          onClick={async () => {
-                            const { error } = await supabase.from("team_members").delete().eq("id", member.id);
-                            if (error) toast.error(error.message);
-                            else toast.success("Member removed");
-                          }}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditing(member)}
+                            className="text-muted-foreground hover:text-primary"
+                            aria-label="Edit member"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const { error } = await supabase.from("team_members").delete().eq("id", member.id);
+                              if (error) toast.error(error.message);
+                              else toast.success("Member removed");
+                            }}
+                            className="text-muted-foreground hover:text-destructive"
+                            aria-label="Delete member"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">{member.position} • {member.department}</p>
@@ -139,6 +151,7 @@ function TeamPage() {
       )}
 
       <MemberDialog open={open} onOpenChange={setOpen} />
+      <EditMemberDialog member={editing} onClose={() => setEditing(null)} />
     </div>
   );
 }
@@ -204,6 +217,82 @@ function MemberDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o:
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Add"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditMemberDialog({ member, onClose }: { member: TeamMemberRow | null; onClose: () => void }) {
+  const [form, setForm] = useState({ name: "", position: "", department: "", email: "", phone: "", employee_id: "", manager: "", skills: "" });
+  const [saving, setSaving] = useState(false);
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (member) {
+      setForm({
+        name: member.name ?? "",
+        position: member.position ?? "",
+        department: member.department ?? "",
+        email: member.email ?? "",
+        phone: member.phone ?? "",
+        employee_id: member.employee_id ?? "",
+        manager: member.manager ?? "",
+        skills: (member.skills ?? []).join(", "),
+      });
+    }
+  }, [member]);
+
+  const save = async () => {
+    if (!member) return;
+    if (!form.name.trim()) return toast.error("Name is required");
+    setSaving(true);
+    const { error } = await supabase
+      .from("team_members")
+      .update({
+        name: form.name,
+        position: form.position || null,
+        department: form.department || null,
+        email: form.email || null,
+        phone: form.phone || null,
+        employee_id: form.employee_id || null,
+        manager: form.manager || null,
+        skills: form.skills ? form.skills.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      })
+      .eq("id", member.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Member updated");
+    onClose();
+  };
+
+  return (
+    <Dialog open={!!member} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader><DialogTitle>Edit Team Member</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          {[
+            ["name", "Full Name"],
+            ["position", "Position"],
+            ["department", "Department"],
+            ["employee_id", "Employee ID"],
+            ["email", "Email"],
+            ["phone", "Phone"],
+            ["manager", "Manager"],
+          ].map(([k, label]) => (
+            <div key={k} className="space-y-1.5">
+              <Label className="text-xs">{label}</Label>
+              <Input value={(form as Record<string, string>)[k]} onChange={(e) => set(k, e.target.value)} />
+            </div>
+          ))}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Skills (comma separated)</Label>
+            <Input value={form.skills} onChange={(e) => set("skills", e.target.value)} placeholder="VMware, Linux, Backup" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
