@@ -90,6 +90,48 @@ function TasksPage() {
         <FilterSelect value={priority} onChange={setPriority} placeholder="Priority" options={TASK_PRIORITIES.map((p) => ({ value: p, label: PRIORITY_META[p].label }))} />
         <FilterSelect value={category} onChange={setCategory} placeholder="Category" options={TASK_CATEGORIES.map((c) => ({ value: c, label: CATEGORY_META[c].label }))} />
         <FilterSelect value={engineer} onChange={setEngineer} placeholder="Engineer" options={members.map((m) => ({ value: m.id, label: m.name }))} />
+        <FilterSelect
+          value={timeframe}
+          onChange={(v) => {
+            setTimeframe(v);
+            if (v !== "all") setDate(undefined);
+          }}
+          placeholder="Timeframe"
+          allLabel="All Time"
+          options={[
+            { value: "past", label: "Past" },
+            { value: "today", label: "Today" },
+            { value: "upcoming", label: "Upcoming" },
+          ]}
+        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn("w-[150px] justify-start gap-2 font-normal", !date && "text-muted-foreground")}
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {date ? format(date, "dd MMM yyyy") : "Pick date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(d) => {
+                setDate(d);
+                if (d) setTimeframe("all");
+              }}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+        {date && (
+          <Button variant="ghost" size="icon" onClick={() => setDate(undefined)} title="Clear date">
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
