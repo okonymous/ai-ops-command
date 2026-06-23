@@ -20,6 +20,9 @@ export function useTasks() {
 
   return useQuery({
     queryKey: ["tasks"],
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchInterval: 20000,
     queryFn: async (): Promise<TaskRow[]> => {
       const { data, error } = await supabase
         .from("tasks")
