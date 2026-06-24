@@ -218,11 +218,21 @@ export function TaskCard({
             <p className="text-xs font-medium text-muted-foreground">Unassigned</p>
           </div>
         )}
-        <Badge variant="secondary" className={cn("shrink-0 text-[11px]", PRIORITY_META[task.priority].className)}>
-          {PRIORITY_META[task.priority].label}
-        </Badge>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {(task.images?.length ?? 0) > 0 && (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <ImageIcon className="h-3.5 w-3.5" />
+              {task.images.length}
+            </span>
+          )}
+          <Badge variant="secondary" className={cn("text-[11px]", PRIORITY_META[task.priority].className)}>
+            {PRIORITY_META[task.priority].label}
+          </Badge>
+        </div>
       </div>
 
+      <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
   );
+
 }
