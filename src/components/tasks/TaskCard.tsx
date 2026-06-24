@@ -120,10 +120,14 @@ export function TaskCard({
 
         {canEdit && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground hover:bg-accent">
+            <DropdownMenuTrigger
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+            >
               <MoreVertical className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+
               <DropdownMenuLabel>Set status</DropdownMenuLabel>
               {TASK_STATUSES.map((s) => (
                 <DropdownMenuItem key={s} onClick={() => updateStatus(s)}>
