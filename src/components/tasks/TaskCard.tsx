@@ -231,9 +231,11 @@ export function TaskCard({
           </Badge>
         </div>
       </div>
-
-      <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
+
+    <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
+    </>
   );
+
 
 }
