@@ -109,6 +109,7 @@ export type Database = {
           equipment: string[]
           estimated_duration: string | null
           id: string
+          images: string[]
           location: string | null
           priority: Database["public"]["Enums"]["task_priority"]
           required_team: string[]
@@ -131,6 +132,7 @@ export type Database = {
           equipment?: string[]
           estimated_duration?: string | null
           id?: string
+          images?: string[]
           location?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           required_team?: string[]
@@ -153,6 +155,7 @@ export type Database = {
           equipment?: string[]
           estimated_duration?: string | null
           id?: string
+          images?: string[]
           location?: string | null
           priority?: Database["public"]["Enums"]["task_priority"]
           required_team?: string[]
