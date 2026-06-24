@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   CalendarDays,
@@ -7,8 +8,10 @@ import {
   Trash2,
   AlertTriangle,
   Wrench,
+  ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
