@@ -88,6 +88,7 @@ export function TaskCard({
   };
 
   return (
+    <>
     <div
       role="button"
       tabIndex={0}
