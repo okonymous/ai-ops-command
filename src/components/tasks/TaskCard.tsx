@@ -88,7 +88,18 @@ export function TaskCard({
   };
 
   return (
-    <div className="glass-strong group relative overflow-hidden rounded-2xl p-4 shadow-sm transition-all hover:shadow-md">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setDetailOpen(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setDetailOpen(true);
+        }
+      }}
+      className="glass-strong group relative cursor-pointer overflow-hidden rounded-2xl p-4 shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+    >
       <div
         className="absolute left-0 top-0 h-full w-1"
         style={{ backgroundColor: `var(--color-${status.token})` }}
@@ -105,6 +116,7 @@ export function TaskCard({
           </div>
           <h3 className="mt-2 font-display font-semibold leading-tight">{task.title}</h3>
         </div>
+
 
         {canEdit && (
           <DropdownMenu>
