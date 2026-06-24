@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   CalendarDays,
@@ -7,8 +8,10 @@ import {
   Trash2,
   AlertTriangle,
   Wrench,
+  ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -40,6 +43,7 @@ export function TaskCard({
   task: TaskRow;
   members: TeamMemberRow[];
 }) {
+  const [detailOpen, setDetailOpen] = useState(false);
   const { canEdit, hasRole, user } = useAuth();
   const status = STATUS_META[task.status];
   const cat = CATEGORY_META[task.category];
@@ -84,7 +88,18 @@ export function TaskCard({
   };
 
   return (
-    <div className="glass-strong group relative overflow-hidden rounded-2xl p-4 shadow-sm transition-all hover:shadow-md">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setDetailOpen(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setDetailOpen(true);
+        }
+      }}
+      className="glass-strong group relative cursor-pointer overflow-hidden rounded-2xl p-4 shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+    >
       <div
         className="absolute left-0 top-0 h-full w-1"
         style={{ backgroundColor: `var(--color-${status.token})` }}
@@ -102,12 +117,17 @@ export function TaskCard({
           <h3 className="mt-2 font-display font-semibold leading-tight">{task.title}</h3>
         </div>
 
+
         {canEdit && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground hover:bg-accent">
+            <DropdownMenuTrigger
+              onClick={(e) => e.stopPropagation()}
+              className="rounded-md p-1 text-muted-foreground hover:bg-accent"
+            >
               <MoreVertical className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+
               <DropdownMenuLabel>Set status</DropdownMenuLabel>
               {TASK_STATUSES.map((s) => (
                 <DropdownMenuItem key={s} onClick={() => updateStatus(s)}>
@@ -198,11 +218,21 @@ export function TaskCard({
             <p className="text-xs font-medium text-muted-foreground">Unassigned</p>
           </div>
         )}
-        <Badge variant="secondary" className={cn("shrink-0 text-[11px]", PRIORITY_META[task.priority].className)}>
-          {PRIORITY_META[task.priority].label}
-        </Badge>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {(task.images?.length ?? 0) > 0 && (
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <ImageIcon className="h-3.5 w-3.5" />
+              {task.images.length}
+            </span>
+          )}
+          <Badge variant="secondary" className={cn("text-[11px]", PRIORITY_META[task.priority].className)}>
+            {PRIORITY_META[task.priority].label}
+          </Badge>
+        </div>
       </div>
 
+      <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
   );
+
 }
