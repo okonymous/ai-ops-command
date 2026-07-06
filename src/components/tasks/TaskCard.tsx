@@ -240,6 +240,7 @@ export function TaskCard({
     </div>
 
     <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
+    <TaskDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
     </>
   );
 
