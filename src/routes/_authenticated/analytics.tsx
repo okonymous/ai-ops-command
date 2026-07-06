@@ -144,12 +144,21 @@ function AnalyticsPage() {
 
         <ChartCard title="Workload Distribution">
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={workloadDist} layout="vertical" margin={{ left: 10 }}>
+            <BarChart data={workloadDist} layout="vertical" margin={{ left: 10, right: 40 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} stroke="var(--color-muted-foreground)" fontSize={12} />
+              <XAxis type="number" domain={[0, 100]} stroke="var(--color-muted-foreground)" fontSize={12} unit="%" />
               <YAxis type="category" dataKey="name" width={70} stroke="var(--color-muted-foreground)" fontSize={12} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
-              <Bar dataKey="util" fill="var(--color-chart-1)" radius={[0, 6, 6, 0]} barSize={18} />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                cursor={{ fill: "var(--color-muted)" }}
+                formatter={(_v, _n, item) => [
+                  `${item.payload.total} tasks · ${item.payload.open} active`,
+                  "Workload",
+                ]}
+              />
+              <Bar dataKey="util" fill="var(--color-chart-1)" radius={[0, 6, 6, 0]} barSize={18}>
+                <LabelList dataKey="total" position="right" fill="var(--color-muted-foreground)" fontSize={12} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
