@@ -6,12 +6,14 @@ import {
   MapPin,
   MoreVertical,
   Trash2,
+  Pencil,
   AlertTriangle,
   Wrench,
   ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
+import { TaskDialog } from "@/components/tasks/TaskDialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
