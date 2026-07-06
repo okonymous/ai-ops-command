@@ -46,6 +46,7 @@ export function TaskCard({
   members: TeamMemberRow[];
 }) {
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const { canEdit, hasRole, user } = useAuth();
   const status = STATUS_META[task.status];
   const cat = CATEGORY_META[task.category];
