@@ -71,10 +71,18 @@ function AnalyticsPage() {
     [tasks],
   );
 
-  const workloadDist = useMemo(
-    () => computeWorkloads(members, tasks).map((w) => ({ name: w.member.name.split(" ")[0], util: w.utilization })),
-    [members, tasks],
-  );
+  const workloadDist = useMemo(() => {
+    const workloads = computeWorkloads(members, tasks).filter((w) => w.total > 0);
+    const maxTotal = Math.max(1, ...workloads.map((w) => w.total));
+    return workloads
+      .map((w) => ({
+        name: w.member.name.split(" ")[0],
+        util: Math.round((w.total / maxTotal) * 100),
+        total: w.total,
+        open: w.open,
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [members, tasks]);
 
   const completed = tasks.filter((t) => t.status === "completed").length;
   const overdue = tasks.filter((t) => t.status === "overdue").length;
