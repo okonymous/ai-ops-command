@@ -6,12 +6,14 @@ import {
   MapPin,
   MoreVertical,
   Trash2,
+  Pencil,
   AlertTriangle,
   Wrench,
   ImageIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TaskDetailDialog } from "@/components/tasks/TaskDetailDialog";
+import { TaskDialog } from "@/components/tasks/TaskDialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -44,6 +46,7 @@ export function TaskCard({
   members: TeamMemberRow[];
 }) {
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const { canEdit, hasRole, user } = useAuth();
   const status = STATUS_META[task.status];
   const cat = CATEGORY_META[task.category];
@@ -128,7 +131,10 @@ export function TaskCard({
               <MoreVertical className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                <Pencil className="h-4 w-4" /> Edit Task
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuLabel>Set status</DropdownMenuLabel>
               {TASK_STATUSES.map((s) => (
                 <DropdownMenuItem key={s} onClick={() => updateStatus(s)}>
@@ -234,6 +240,7 @@ export function TaskCard({
     </div>
 
     <TaskDetailDialog task={task} members={members} open={detailOpen} onOpenChange={setDetailOpen} />
+    <TaskDialog open={editOpen} onOpenChange={setEditOpen} task={task} />
     </>
   );
 
