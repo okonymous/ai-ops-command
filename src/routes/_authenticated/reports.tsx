@@ -22,6 +22,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { generateReport } from "@/lib/ai.functions";
 import { useTasks, useTeamMembers, computeWorkloads } from "@/hooks/useData";
@@ -36,12 +37,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUS_META,
   CATEGORY_META,
   PRIORITY_META,
   type TaskRow,
+  type TeamMemberRow,
 } from "@/lib/constants";
 import { Markdown } from "@/components/Markdown";
 import { toast } from "sonner";
@@ -88,6 +97,23 @@ function shiftRef(period: DetailPeriod, ref: Date, dir: number) {
   return addMonths(ref, dir);
 }
 
+function isAssignedTo(task: TaskRow, member: TeamMemberRow) {
+  if (task.assigned_to_ids?.length && task.assigned_to_ids.includes(member.id)) return true;
+  if (task.assigned_to === member.id) return true;
+  const memberName = member.name.trim().toLowerCase();
+  if (task.assigned_names?.length) {
+    return task.assigned_names.some((n) => {
+      const nm = (n ?? "").trim().toLowerCase();
+      return nm === memberName || nm.includes(memberName) || memberName.includes(nm);
+    });
+  }
+  if (task.assigned_name) {
+    const nm = task.assigned_name.trim().toLowerCase();
+    return nm === memberName || nm.includes(memberName) || memberName.includes(nm);
+  }
+  return false;
+}
+
 function ReportsPage() {
   const { data: tasks = [] } = useTasks();
   const { data: members = [] } = useTeamMembers();
@@ -98,6 +124,12 @@ function ReportsPage() {
 
   const [detailPeriod, setDetailPeriod] = useState<DetailPeriod>("day");
   const [refDate, setRefDate] = useState<Date>(new Date());
+  const [engineerId, setEngineerId] = useState<string>("all");
+
+  const selectedMember = useMemo(
+    () => members.find((m) => m.id === engineerId),
+    [members, engineerId],
+  );
 
   const { start, end } = useMemo(() => getRange(detailPeriod, refDate), [detailPeriod, refDate]);
 
@@ -106,10 +138,20 @@ function ReportsPage() {
       .filter((t) => {
         if (!t.task_date) return false;
         const d = new Date(t.task_date + "T00:00:00");
-        return d >= start && d <= end;
+        if (d < start || d > end) return false;
+        if (selectedMember && !isAssignedTo(t, selectedMember)) return false;
+        return true;
       })
       .sort((a, b) => (a.task_date ?? "").localeCompare(b.task_date ?? ""));
-  }, [tasks, start, end]);
+  }, [tasks, start, end, selectedMember]);
+
+  const engineerTasks = useMemo(() => {
+    if (!selectedMember) return [];
+    return tasks
+      .filter((t) => isAssignedTo(t, selectedMember))
+      .sort((a, b) => (a.task_date ?? "").localeCompare(b.task_date ?? ""));
+  }, [tasks, selectedMember]);
+
 
   const stats = useMemo(() => {
     const by = (s: string) => periodTasks.filter((t) => t.status === s).length;
@@ -201,13 +243,47 @@ function ReportsPage() {
             <Button variant="ghost" size="sm" onClick={() => setRefDate(new Date())}>Today</Button>
           </div>
 
-          <Button
-            className="ml-auto gap-2"
-            onClick={() => exportCsv(periodTasks, `${detailPeriod}-${format(start, "yyyy-MM-dd")}`)}
-          >
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <Select value={engineerId} onValueChange={setEngineerId}>
+              <SelectTrigger className="w-[190px]">
+                <SelectValue placeholder="All engineers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All engineers</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {selectedMember && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() =>
+                  exportCsv(engineerTasks, `${selectedMember.name.replace(/\s+/g, "-").toLowerCase()}-all`)
+                }
+              >
+                <Download className="h-4 w-4" /> All tasks · {selectedMember.name.split(" ")[0]}
+              </Button>
+            )}
+            <Button
+              className="gap-2"
+              onClick={() =>
+                exportCsv(
+                  periodTasks,
+                  `${detailPeriod}-${format(start, "yyyy-MM-dd")}${selectedMember ? "-" + selectedMember.name.replace(/\s+/g, "-").toLowerCase() : ""}`,
+                )
+              }
+            >
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </div>
         </div>
+
 
         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <StatBox label="Total" value={stats.total} />
