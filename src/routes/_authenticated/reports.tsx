@@ -123,6 +123,12 @@ function ReportsPage() {
 
   const [detailPeriod, setDetailPeriod] = useState<DetailPeriod>("day");
   const [refDate, setRefDate] = useState<Date>(new Date());
+  const [engineerId, setEngineerId] = useState<string>("all");
+
+  const selectedMember = useMemo(
+    () => members.find((m) => m.id === engineerId),
+    [members, engineerId],
+  );
 
   const { start, end } = useMemo(() => getRange(detailPeriod, refDate), [detailPeriod, refDate]);
 
@@ -131,10 +137,20 @@ function ReportsPage() {
       .filter((t) => {
         if (!t.task_date) return false;
         const d = new Date(t.task_date + "T00:00:00");
-        return d >= start && d <= end;
+        if (d < start || d > end) return false;
+        if (selectedMember && !isAssignedTo(t, selectedMember)) return false;
+        return true;
       })
       .sort((a, b) => (a.task_date ?? "").localeCompare(b.task_date ?? ""));
-  }, [tasks, start, end]);
+  }, [tasks, start, end, selectedMember]);
+
+  const engineerTasks = useMemo(() => {
+    if (!selectedMember) return [];
+    return tasks
+      .filter((t) => isAssignedTo(t, selectedMember))
+      .sort((a, b) => (a.task_date ?? "").localeCompare(b.task_date ?? ""));
+  }, [tasks, selectedMember]);
+
 
   const stats = useMemo(() => {
     const by = (s: string) => periodTasks.filter((t) => t.status === s).length;
