@@ -22,6 +22,7 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { generateReport } from "@/lib/ai.functions";
 import { useTasks, useTeamMembers, computeWorkloads } from "@/hooks/useData";
