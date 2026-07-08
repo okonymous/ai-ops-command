@@ -36,12 +36,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUS_META,
   CATEGORY_META,
   PRIORITY_META,
   type TaskRow,
+  type TeamMemberRow,
 } from "@/lib/constants";
 import { Markdown } from "@/components/Markdown";
 import { toast } from "sonner";
