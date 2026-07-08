@@ -96,6 +96,23 @@ function shiftRef(period: DetailPeriod, ref: Date, dir: number) {
   return addMonths(ref, dir);
 }
 
+function isAssignedTo(task: TaskRow, member: TeamMemberRow) {
+  if (task.assigned_to_ids?.length && task.assigned_to_ids.includes(member.id)) return true;
+  if (task.assigned_to === member.id) return true;
+  const memberName = member.name.trim().toLowerCase();
+  if (task.assigned_names?.length) {
+    return task.assigned_names.some((n) => {
+      const nm = (n ?? "").trim().toLowerCase();
+      return nm === memberName || nm.includes(memberName) || memberName.includes(nm);
+    });
+  }
+  if (task.assigned_name) {
+    const nm = task.assigned_name.trim().toLowerCase();
+    return nm === memberName || nm.includes(memberName) || memberName.includes(nm);
+  }
+  return false;
+}
+
 function ReportsPage() {
   const { data: tasks = [] } = useTasks();
   const { data: members = [] } = useTeamMembers();
