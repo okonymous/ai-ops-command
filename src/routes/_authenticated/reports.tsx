@@ -242,13 +242,47 @@ function ReportsPage() {
             <Button variant="ghost" size="sm" onClick={() => setRefDate(new Date())}>Today</Button>
           </div>
 
-          <Button
-            className="ml-auto gap-2"
-            onClick={() => exportCsv(periodTasks, `${detailPeriod}-${format(start, "yyyy-MM-dd")}`)}
-          >
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <Select value={engineerId} onValueChange={setEngineerId}>
+              <SelectTrigger className="w-[190px]">
+                <SelectValue placeholder="All engineers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All engineers</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {selectedMember && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() =>
+                  exportCsv(engineerTasks, `${selectedMember.name.replace(/\s+/g, "-").toLowerCase()}-all`)
+                }
+              >
+                <Download className="h-4 w-4" /> All tasks · {selectedMember.name.split(" ")[0]}
+              </Button>
+            )}
+            <Button
+              className="gap-2"
+              onClick={() =>
+                exportCsv(
+                  periodTasks,
+                  `${detailPeriod}-${format(start, "yyyy-MM-dd")}${selectedMember ? "-" + selectedMember.name.replace(/\s+/g, "-").toLowerCase() : ""}`,
+                )
+              }
+            >
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+          </div>
         </div>
+
 
         <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <StatBox label="Total" value={stats.total} />
